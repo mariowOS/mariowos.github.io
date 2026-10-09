@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mariowOS | Security Updates Center</title>
+    <style>
+        :root {
+            --text-color: #FFFF;
+            --bg-color: #1c1b1b; 
+            --border-color: #eaecef;
+            --code-bg: #080808;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+
+        }
+        h1, h2, h3, h4, h5 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+        }
+        h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3em;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            background-color: var(--code-bg);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1.5em;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        th {
+            background-color: var(--code-bg);
+        }
+        hr {
+            height: 1px;
+            background-color: var(--border-color);
+            border: none;
+            margin: 2em 0;
+        }
+        .severity-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .critical { color: #cb2431; }
+        .high { color: #e36209; }
+        .medium { color: #b08800; }
+        .low { color: #0366d6; }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li {
+            margin-bottom: 0.25em;
+        }
+        .critical a {
+         color: rgb(246, 5, 5);
+         font-weight: bold;
+         text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <h2>mariowOS > Security</h2>
+    <h3 class="critical"><a href="100926/index.html">Patch (100926, honeypot 1.2.0)</a></h3>
+    <p>Critical security patch</p>
+
+</body>
+</html>

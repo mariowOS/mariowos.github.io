@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>security update 10-09-2026</title>
+    <style>
+        :root {
+            --text-color: #FFFF;
+            --bg-color: #1c1b1b;
+            --link-color: #0366d6;
+            --border-color: #eaecef;
+            --code-bg: #080808;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1, h2, h3, h4, h5 {
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: 600;
+        }
+        h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3em;
+        }
+        code {
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+            background-color: var(--code-bg);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 85%;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1.5em;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        th {
+            background-color: var(--code-bg);
+        }
+        hr {
+            height: 1px;
+            background-color: var(--border-color);
+            border: none;
+            margin: 2em 0;
+        }
+        .severity-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .critical { color: #cb2431; }
+        .high { color: #e36209; }
+        .medium { color: #b08800; }
+        .low { color: #0366d6; }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li {
+            margin-bottom: 0.25em;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>🍯 mariowOS Honeypot (1.2.0)</h2>
+    <p>The mariowOS kernel was <strong>lacking authentication across almost its entire API surface</strong> and was listening <strong>on all network interfaces</strong>. This combination meant that a device on the same local network can control system functions on the user's PC without credentials. Multiple endpoints allow command execution; the existing access controls can be bypassed.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Severity</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="critical"><strong>Critical</strong></td>
+                <td>6</td>
+            </tr>
+            <tr>
+                <td class="high"><strong>High</strong></td>
+                <td>7</td>
+            </tr>
+            <tr>
+                <td class="medium"><strong>Medium</strong></td>
+                <td>6</td>
+            </tr>
+            <tr>
+                <td class="low"><strong>Low</strong></td>
+                <td>3</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2>What we found</h2>
+
+    <h3 class="critical">🔴 CRITICAL</h3>
+
+    <h4>C-01 — Command execution via <code>/api/recovery/debug</code> without password</h4>
+    <p><code>system/server.js:982-998</code></p>
+    <p>The route passes <code>req.body.command</code> directly to <code>exec()</code>. The only check is the <code>config.allowFlashing</code> flag; no password is required. Since the flag can be modified by another unprotected route (see C-03) and defaults to <code>true</code> in the distributed <code>config.json</code>, this check offers no real protection.</p>
+    <ul>
+        <li><strong>Impact:</strong> Arbitrary command execution with user privileges.</li>
+        <li><strong>Fix:</strong> Remove the endpoint, or protect it with the same session token as other sensitive routes <strong>and</strong> default <code>allowFlashing</code> to <code>false</code>. Unrestricted command execution via HTTP should not exist in a production build.</li>
+    </ul>
+
+    <h4>C-02 — Bypassable guard on <code>/api/remote/exec</code></h4>
+    <p><code>system/server.js:2615-2631</code></p>
+    <p>The check is <code>if (!match &amp;&amp; currentConfig.passwordHash)</code>. When <code>passwordHash</code> is <code>null</code>/empty (first boot, after a factory reset, or after <code>/clear-password</code>), the condition evaluates to false and the command is executed <strong>without verification</strong>.</p>
+    <ul>
+        <li><strong>Impact:</strong> Unauthenticated command execution in all "no password" states.</li>
+        <li><strong>Fix:</strong> Invert the logic — absence of <code>passwordHash</code> ⇒ <strong>403</strong>, never execute. Use constant-time comparison and rate-limiting on attempts. Ideally, gate this behind an authenticated session as well.</li>
+    </ul>
+
+    <h4>C-03 — Privilege escalation via <code>/save-settings</code></h4>
+    <p><code>system/server.js:1084-1103</code></p>
+    <p><code>save-settings</code> copies every key not present in the <code>PROTECTED</code> list (<code>passwordHash</code>, <code>verified</code>, <code>quickSettings</code>) into the config. Security flags like <code>allowFlashing</code>, <code>frpLock</code>, <code>rules</code>, and <code>installedApps</code> are <strong>not</strong> protected and can be set by an unauthenticated request.</p>
+    <ul>
+        <li><strong>Impact:</strong> A caller can independently enable functions that unlock other attack chains (e.g., <code>allowFlashing</code> for C-01).</li>
+        <li><strong>Fix:</strong> Switch from a denylist to an <strong>allowlist</strong>: accept only the fields actually modifiable by the user. Everything else must be ignored.</li>
+    </ul>
+
+    <h4>C-04 — Complete config overwrite via <code>/api/system/frp-unlock</code></h4>
+    <p><code>system/server.js:957-977</code></p>
+    <p>With <code>type:"file"</code>, the route executes <code>config = { ...payload, frpLock:false }</code> and overwrites <code>config.json</code> from unauthenticated input: this allows injecting an arbitrary <code>passwordHash</code> and bypassing the FRP lock.</p>
+    <ul>
+        <li><strong>Impact:</strong> Account takeover — the legitimate user can be locked out of their own system.</li>
+        <li><strong>Fix:</strong> Never rebuild the config from raw input. Accept only a signed/verified recovery file, and do not allow the direct setting of <code>passwordHash</code>.</li>
+    </ul>
+
+    <h4>C-05 — Unauthenticated factory reset and wipe</h4>
+    <p><code>system/server.js:1136+</code> (<code>/api/system/factory-reset</code>) and <code>:938</code> (<code>/api/recovery/wipe</code>)</p>
+    <p>Both routes delete files and clear the config without any authentication. Aside from direct damage (data loss), they bring the state to "no password," reopening C-02.</p>
+    <ul>
+        <li><strong>Fix:</strong> Require authentication + confirmation; do not clear the <code>passwordHash</code> of a currently active user.</li>
+    </ul>
+
+    <h4>C-06 — Path traversal in sandbox → out-of-bounds write/execution</h4>
+    <p><code>system/server.js:1434-1470</code> (<code>/api/sandbox/upload</code>, <code>/api/sandbox/start</code>)</p>
+    <p>The <code>vmId</code> from the request is concatenated into paths (<code>path.join(sandboxBaseDir, vmId, "disk")</code>) without validation. Then, <code>/api/sandbox/start</code> writes a wrapper and executes <code>node</code> in the resulting directory.</p>
+    <ul>
+        <li><strong>Impact:</strong> Out-of-bounds file write and code execution outside the sandbox.</li>
+        <li><strong>Fix:</strong> Validate <code>vmId</code> with a strict allowlist (<code>^[a-zA-Z0-9_-]+$</code>), resolve the path, and verify it is contained within <code>sandboxBaseDir</code> (similar to what is done for <code>/home</code> in <code>resolveVirtualPath</code>).</li>
+    </ul>
+
+    <hr>
+
+    <h3 class="high">🟠 HIGH</h3>
+
+    <h4>A-01 — Server listens on all interfaces</h4>
+    <p><code>system/server.js:2887</code> — <code>app.listen(PORT)</code> lacks a host parameter (though the log prints <code>127.0.0.1</code>).</p>
+    <ul>
+        <li><strong>Impact:</strong> All the vulnerabilities above are reachable from the LAN, not just localhost.</li>
+        <li><strong>Fix:</strong> <code>app.listen(PORT, '127.0.0.1')</code>, allowing intentional overrides via a documented environment variable.</li>
+    </ul>
+
+    <h4>A-02 — No session authentication on the API</h4>
+    <p>All <code>/api/*</code> routes except <code>/api/remote/exec</code> lack any verification; <code>/login</code> only returns the desktop HTML and does not establish a session.</p>
+    <ul>
+        <li><strong>Fix:</strong> Issue a signed session token upon login and verify it via a middleware on all mutating routes. <code>hasValidShutdownToken</code> (<code>:147</code>) already exists as a baseline to generalize.</li>
+    </ul>
+
+    <h4>A-03 — Arbitrary host filesystem read via <code>/device</code></h4>
+    <p><code>resolveDevicePath</code> <code>:2655</code> + <code>GET /api/system/files/content</code></p>
+    <p><code>/device</code> exposes the entire host filesystem for reading via HTTP; sensitive user files (keys, configs, saved credentials) can be read by a network caller.</p>
+    <ul>
+        <li><strong>Fix:</strong> Restrict content reading to <code>/home</code>; for <code>/device</code>, retain only directory listing capabilities, or apply a denylist and <code>fs.realpathSync</code> before containment checks (also against symlinks/junctions).</li>
+    </ul>
+
+    <h4>A-04 — Command injection in system helpers</h4>
+    <p><code>:594/790</code> (Wi-Fi), <code>:831/886</code> (Bluetooth), <code>:1837</code> (<code>extractCmd</code>), <code>:491</code> (volume)</p>
+    <p>Request inputs (SSID, MAC, device name, zip path) are interpolated into strings passed to <code>exec()</code>.</p>
+    <ul>
+        <li><strong>Fix:</strong> Replace every <code>exec(string)</code> with the <code>spawn(command, args)</code> wrapper already present at <code>:25</code> (arguments as arrays, no shell); validate inputs with allowlist regexes.</li>
+    </ul>
+
+    <h4>A-05 — <code>Access-Control-Allow-Origin: *</code> on update streams</h4>
+    <p><code>:2392</code>, <code>:2464</code> — Any website opened by the user can interact with these streams.</p>
+    <ul>
+        <li><strong>Fix:</strong> Remove the wildcard; allow only the local origin.</li>
+    </ul>
+
+    <h4>A-06 — Rules engine executes arbitrary commands (persistence)</h4>
+    <p><code>:1729</code> <code>case 'run': exec(params.command)</code> — Rules are saved via <code>/api/rules/save</code> (<code>:1673</code>) without authentication and triggered by <code>node-cron</code>.</p>
+    <ul>
+        <li><strong>Impact:</strong> A malicious rule will repeatedly execute over time, even after a reboot.</li>
+        <li><strong>Fix:</strong> Remove the free-text command action; use an allowlist of predefined actions. Protect <code>/api/rules/save</code>.</li>
+    </ul>
+
+    <h4>A-07 — Supply chain: Remote code executed without verification</h4>
+    <p><code>:1454</code> <code>git clone</code> of arbitrary URLs, <code>:1296/1318</code> <code>git pull</code>, OTA/SOTA updates, respawn <code>:2300</code></p>
+    <p>Remote code and zip files are downloaded and executed without signature or checksum verification.</p>
+    <ul>
+        <li><strong>Fix:</strong> Implement integrity checks (hash/signature) before execution; restrict sources to trusted repositories.</li>
+    </ul>
+
+    <hr>
+
+    <h3 class="medium">🟡 MEDIUM</h3>
+    <ul>
+        <li><strong>M-01:</strong> Vulnerable <code>nodemailer</code> (SMTP command injection, GHSA-c7w3-x93f-qmm8 / GHSA-vvjj-xcjg-gr5g) in both <code>package.json</code> files. <strong>Fix:</strong> Update to ≥ 8.0.4.</li>
+        <li><strong>M-02:</strong> <code>node-cron</code> 3.0.x (vulnerable <code>uuid</code> dependency). <strong>Fix:</strong> Update to 4.x.</li>
+        <li><strong>M-03:</strong> <code>body-parser</code> 2.0–2.2.2 (DoS, GHSA-v422-hmwv-36x6). <strong>Fix:</strong> Update dependency.</li>
+        <li><strong>M-04:</strong> Multer uploads lack consistent size limits or real content validation on some endpoints (<code>:443</code>, <code>:462</code>, <code>:499</code>, restore <code>:897</code>). <strong>Fix:</strong> Apply <code>limits.fileSize</code>, validate names with <code>path.basename</code>, verify file signatures.</li>
+        <li><strong>M-05:</strong> <code>/api/system/restore</code> rebuilds the config from an unauthenticated uploaded file (<code>:906</code>). <strong>Fix:</strong> Authenticate and validate the schema.</li>
+        <li><strong>M-06:</strong> <code>eval()</code> used in the frontend terminal <code>desktop/apps/terminal/index.html:1437</code>. <strong>Fix:</strong> Review this; if processing untrusted input, replace with an explicit parser.</li>
+    </ul>
+
+    <hr>
+
+    <h3 class="low">🔵 LOW</h3>
+    <ul>
+        <li><strong>B-01:</strong> <code>launcher.js:328</code> <code>webviewTag:true</code> without <code>will-attach-webview</code> / <code>setWindowOpenHandler</code> event handlers. <strong>Fix:</strong> Restrict navigation and attachment of child webviews.</li>
+        <li><strong>B-02:</strong> <code>@tomphttp/bare-server-node</code> is declared but unused. <strong>Fix:</strong> Remove the dependency.</li>
+        </li>
+    </ul>
+
+    <hr>
+
+    <h2>What we patched</h2>
+
+    <h3>Implemented in this batch (<code>system/server.js</code> unless noted):</h3>
+    <ul>
+        <li>✅ <strong>A-01</strong> — Bound to <code>127.0.0.1</code> (override via <code>MARIOWOS_BIND_HOST</code>).</li>
+        <li>✅ <strong>C-01</strong> — <code>/api/recovery/debug</code> now requires flag <strong>and</strong> password; <code>allowFlashing:false</code> in <code>config.json</code>.</li>
+        <li>✅ <strong>C-02</strong> — <code>/api/remote/exec</code> fails closed if no password is configured.</li>
+        <li>✅ <strong>C-03</strong> — <code>/save-settings</code> converted to an allowlist model.</li>
+        <li>✅ <strong>C-04</strong> — File-type <code>frp-unlock</code> can no longer inject an arbitrary <code>passwordHash</code>.</li>
+        <li>✅ <strong>C-06</strong> — <code>vmId</code> validated during sandbox upload/start/delete.</li>
+        <li>✅ <strong>A-03</strong> — File content reading restricted to <code>/home</code> (no exfiltration from <code>/device</code>).</li>
+        <li>✅ <strong>A-04</strong> — Anti-injection validation added to <code>connect-wifi</code> and <code>connect-bt</code>.</li>
+        <li>✅ <strong>A-05</strong> — Wildcard CORS removed from update streams.</li>
+        <li>✅ <strong>A-06</strong> — <code>run</code> action of the rules engine disabled.</li>
+        <li>✅ <strong>M-01/02/03</strong> — <code>nodemailer</code>→10.x, <code>node-cron</code>→4.x, <code>body-parser</code> updated. <code>npm audit</code> = 0 vulnerabilities in both folders.</li>
+        <li>✅ <strong>B-03</strong> (partial) — <code>keys.json</code> removed from tracking. <strong>Urgent action on the SMTP password in history is still pending (see below).</strong></li>
+    </ul>
+
+    <h3>Implemented — Second Batch:</h3>
+    <ul>
+        <li>✅ <strong>A-02 — Session authentication.</strong> Signed cookie (HMAC-SHA256) <code>HttpOnly; SameSite=Strict</code>, issued at login/setup, required on every mutating request (<code>POST/PUT/DELETE/PATCH</code>) except the login/recovery flow. Secret stored in <code>system/session.key</code> (gitignored, never in <code>config.json</code>). Tested end-to-end: unauthenticated POST → <code>401</code>, valid login → cookie + <code>200</code>, authenticated call → <code>200</code>. New endpoint <code>/api/system/logout</code>.
+            <ul>
+                <li>Thanks to <code>SameSite=Strict</code>, this <strong>also closes the CSRF vector</strong> from local web pages targeting <code>127.0.0.1</code> on destructive routes: <strong>C-05</strong> (factory-reset/wipe) and <strong>M-05</strong> (<code>/api/system/restore</code>) are now protected.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h3>New Features:</h3>
+    <ul>
+        <li>✅ <strong>App updates via <code>version.json</code>.</strong> <code>install</code> registers <code>repoUrl</code> + version; <code>check-upgrades</code>/<code>do-upgrade</code> compare the local version with the one declared in the app repo's <code>version.json</code> (semver rules, <code>isNewerVersion</code> helper) and only update forward via <code>git pull --ff-only</code> from the set origin. <code>repoUrl</code> is constrained to <code>https github.com</code> URLs (<code>isAllowedRepoUrl</code>) — this also hardens <code>git clone</code> against malicious URLs.</li>
+        <li>✅ <strong>Per-app endpoint permissions (transparent foundation).</strong> Readable file <code>system/app-permissions.json</code> (prefix→app rules), per-app signed token via <code>POST /api/app/token</code>, <code>enforceAppPermissions</code> middleware. <strong>Disabled by default</strong> (<code>enforced:false</code>) to avoid breaking apps until the frontend sends <code>X-App-Token</code>. Tested: no token→403, valid token→200, app token on another app's endpoint→403. <strong>Honest limitation:</strong> Apps are same-origin iframes → least-privilege by convention and traceability, not strong isolation (would require separate per-app origins).</li>
+    </ul>
+
+    <h3>Implemented — Third Batch (User-Side Hardening):</h3>
+    <ul>
+        <li>✅ <strong>A-07 — Update authenticity.</strong> OTA (backend self-update) now calls <code>verifyUpdateAuthenticity()</code> <strong>before</strong> downloading/applying: it verifies a detached signature of <code>version.json</code> against a local public key. <strong>Opt-in by key presence:</strong> Depositing <code>system/update-pubkey.pem</code> and publishing <code>system/version.json.sig</code> (base64 signature) in the repo makes updates authenticated, and unsigned ones are <strong>rejected</strong>; without the key, behavior is unchanged with a warning. <code>git clone</code>/<code>git pull</code> of store apps are also constrained to <code>https github.com</code> URLs. The SOTA chain already had integrity verification (hash vs manifest). <em>Note: The signature protects against third-parties/MITM and tampered sources, not against a first-party maintainer signing with the official key.</em></li>
+        <li>✅ <strong>M-04 — Upload limits.</strong> Size limits on all uploads (images 8 MB, backup 2 MB, VM zip 512 MB); filenames already fixed or sanitized.</li>
+        <li>✅ <strong>M-06 — Terminal <code>eval</code>.</strong> <code>math</code> command now uses a safe arithmetic parser (<code>safeMath</code>, shunting-yard); tested to block arbitrary JS.</li>
+        <li>✅ <strong>B-01 — Electron webview.</strong> <code>launcher.js</code>: <code>web-contents-created</code> with <code>will-attach-webview</code> (denies Node/preload in child webviews) and <code>setWindowOpenHandler</code> (http links → external browser, all else denied).</li>
+    </ul>
+
+    <h3>Implemented — Fourth Batch:</h3>
+    <ul>
+        <li>✅ <strong>Verified boot / Tamper detection.</strong> New <code>GET /api/recovery/verify-integrity</code>: compares <code>system/</code> files with a signed manifest (<code>integrity-manifest.json</code> + <code>.sig</code>, verified against <code>update-pubkey.pem</code>). Reports modified/missing files and, if the system is tampered <strong>and is locked</strong> (<code>allowFlashing</code> off), returns <code>recommendReflash:true</code> — the intended flow: system touched without unlock → recovery flags it and prompts to reflash clean stock. Real backing for the "VERIFYING FILESYSTEM INTEGRITY" screen, previously a fake loader. Added tool <code>system/tools/gen-integrity-manifest.js</code> to generate the manifest on release. Tested: intact build → <code>tampered:false</code>; altered file → <code>tampered:true</code> + <code>recommendReflash:true</code>.</li>
+        <li>✅ <strong>Authenticated flashing unlock (OEM-unlock analog).</strong> New <code>POST /api/recovery/set-flashing</code> requiring <strong>mandatory account password</strong>: the only way to enable <code>allowFlashing</code>, now that C-03 removed the remote path. Thus, "unlock" is a deliberate act by the local user, not a flag secretly flipped by whoever delivers the build. Tested: no session → 401, wrong password → 403, correct → unlocks with explicit warning.</li>
+        <li>↪️ <strong>"Reflash clean stock"</strong> reuses the already <strong>signed</strong> OTA (A-07): download+apply verified stock, no unsigned code installer added.</li>
+    </ul>
+
+</ul>
+
+</body>
+</html>
