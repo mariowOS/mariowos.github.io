@@ -5,575 +5,236 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mariowOS - Download</title>
-
-    <!-- Import Poppins Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Poppins:wght@600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../theme/halo.css">
     <style>
-        :root {
-            --bg: #000000;
-            --text-main: #ffffff;
-            --text-sub: #a1a1aa;
-            --border: rgba(255, 255, 255, 0.08);
-            --glass: rgba(255, 255, 255, 0.04);
-            --ease: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        html {
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        /* Hide the scrollbar but keep scrolling working */
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar {
-            display: none;
-            width: 0;
-            height: 0;
-        }
-
-        ::selection {
-            background: rgba(62, 202, 227, 0.35);
-            color: #fff;
-        }
-
-        a:focus-visible {
-            outline: 2px solid rgba(255, 255, 255, 0.6);
-            outline-offset: 4px;
-            border-radius: 8px;
-        }
-
-        /* Soft aurora glow behind the stars */
-        .aurora {
-            position: fixed;
-            inset: -20%;
-            z-index: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(40% 35% at 20% 25%, rgba(62, 202, 227, 0.09), transparent 70%),
-                radial-gradient(35% 40% at 80% 70%, rgba(120, 52, 216, 0.11), transparent 70%),
-                radial-gradient(30% 30% at 50% 100%, rgba(141, 255, 171, 0.05), transparent 70%);
-            filter: blur(40px);
-            animation: auroraDrift 30s ease-in-out infinite alternate;
-        }
-
-        @keyframes auroraDrift {
-            0% {
-                transform: translate3d(0, 0, 0) scale(1);
-            }
-
-            100% {
-                transform: translate3d(-4%, 3%, 0) scale(1.08);
-            }
-        }
-
-        @keyframes riseIn {
-            from {
-                opacity: 0;
-                transform: translateY(24px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
             min-height: 100vh;
             min-height: 100dvh;
-            width: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            overflow-x: hidden;
-            overflow-y: auto;
         }
 
-        /* Top Navigation Header */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 1.5rem 3.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
-        }
-
-        .nav-logo {
-            height: 22px;
-            object-fit: contain;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
-            padding: 0.6rem 1.1rem;
-            border-radius: 999px;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
-        .nav-links a {
-            display: flex;
-        }
-
-        .nav-links img {
-            height: 22px;
-            opacity: 0.6;
-            transition: opacity 0.3s ease, transform 0.3s var(--ease);
-        }
-
-        .nav-links img:hover {
-            opacity: 1;
-            transform: translateY(-1px);
-        }
-
-        /* Interactive Star Canvas */
-        #star-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Main Container */
-        .main-container {
+        main {
             position: relative;
             z-index: 10;
             flex: 1 0 auto;
+            width: 100%;
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 8.5rem var(--gutter) 4rem;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 6.5rem 1.5rem 3rem 1.5rem;
-            max-width: 950px;
-            margin: 0 auto;
-            width: 100%;
-            gap: clamp(2rem, 5vh, 3rem);
+            gap: 3.5rem;
         }
 
-        /* Warning Banner */
-        .warning-banner {
-            width: 100%;
-            background: linear-gradient(90deg, rgba(234, 179, 8, 0.10) 0%, rgba(28, 25, 23, 0.6) 40%);
-            border: 1px solid rgba(234, 179, 8, 0.25);
-            border-radius: 14px;
-            padding: 1rem 1.4rem;
+        /* Notice strip */
+        .notice {
             display: flex;
-            align-items: center;
-            gap: 1.2rem;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            align-items: flex-start;
+            gap: 1.4rem;
+            padding: 1.1rem 1.4rem;
         }
 
-        .warning-banner svg {
-            width: 24px;
-            height: 24px;
-            fill: #eab308;
+        .notice-tag {
             flex-shrink: 0;
+            padding: 0.3rem 0.6rem;
+            background: var(--ink);
+            color: #000;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
         }
 
-        .warning-text {
-            min-width: 0;
+        .notice h3 {
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.3rem;
         }
 
-        .warning-text h4 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 0.25rem;
-        }
-
-        .warning-text p {
+        .notice p {
             font-size: 0.78rem;
-            color: var(--text-sub);
-            line-height: 1.5;
-            margin: 0;
+            line-height: 1.6;
         }
 
-        /* Section Blocks */
-        .download-section {
+        /* Hero */
+        .hero {
             text-align: center;
-            width: 100%;
-        }
-
-        .main-container>* {
-            opacity: 0;
-            animation: riseIn 1.2s var(--ease) forwards;
-        }
-
-        .main-container>*:nth-child(2) {
-            animation-delay: 0.1s;
-        }
-
-        .main-container>*:nth-child(3) {
-            animation-delay: 0.2s;
-        }
-
-        .main-container>*:nth-child(4) {
-            animation-delay: 0.3s;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 0.6rem;
-            overflow-wrap: break-word;
-        }
-
-        h2 {
-            font-size: 1.7rem;
-            font-weight: 700;
-            line-height: 1.25;
-            margin-bottom: 0.6rem;
-            overflow-wrap: break-word;
-        }
-
-        p {
-            font-size: 0.9rem;
-            color: var(--text-sub);
-            line-height: 1.5;
-            overflow-wrap: break-word;
-        }
-
-        /* Gradients */
-        .text-gradient-switch {
-            background: linear-gradient(90deg, #FCCEFF 0%, #3ECAE3 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .text-gradient-taste {
-            background: linear-gradient(90deg, #7834D8 0%, #99004F 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .text-gradient-cook {
-            background: linear-gradient(90deg, #8DFFAB 0%, #FFAA8B 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Button Groups */
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem 1.5rem;
-            margin-top: 1rem;
-            justify-content: center;
-        }
-
-        .btn {
-            --glow: rgba(255, 255, 255, 0.5);
-            padding: 0.75rem 2rem;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            color: var(--text-main);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            position: relative;
-            isolation: isolate;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            text-align: center;
-            transition: transform 0.4s var(--ease), background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-        }
-
-        /* Soft colored halo instead of a hard outline */
-        .btn::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            background: var(--glow);
-            filter: blur(22px);
-            opacity: 0;
-            z-index: -1;
-            transition: opacity 0.4s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .btn:hover::before {
-            opacity: 0.35;
-        }
-
-        .btn-arrow {
-            display: inline-block;
-            transition: transform 0.4s var(--ease);
-        }
-
-        .btn:hover .btn-arrow {
-            transform: translateX(4px);
-        }
-
-        /* Primary action: solid, high-contrast */
-        .btn-primary {
-            background: #ffffff;
-            color: #000000;
-            border-color: #ffffff;
-        }
-
-        .btn-primary:hover {
-            background: #ffffff;
-            border-color: #ffffff;
-        }
-
-        .btn-primary:hover::before {
-            opacity: 0.55;
-        }
-
-        .btn-primary {
-            padding: 0.9rem 2.6rem;
-            font-size: 1.1rem;
-        }
-
-        /* Each button keeps its section's accent as a hover halo */
-        .btn-gradient-1 {
-            --glow: linear-gradient(90deg, #FCCEFF 0%, #3ECAE3 100%);
-        }
-
-        .btn-gradient-2 {
-            --glow: linear-gradient(90deg, #7834D8 0%, #99004F 100%);
-        }
-
-        .btn-gradient-3 {
-            --glow: linear-gradient(90deg, #8DFFAB 0%, #FFAA8B 100%);
-        }
-
-        .btn-gradient-4 {
-            --glow: linear-gradient(90deg, #00FFFF 0%, #0059FF 100%);
-        }
-
-        /* Footer */
-        footer {
-            width: 100%;
-            max-width: 950px;
-            margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 1.5rem 2rem;
-            padding: 1.5rem 1.5rem 1.75rem 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.85rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        .footer-lists {
-            display: flex;
-            gap: 3rem;
-        }
-
-        .footer-lists ul {
-            list-style-type: none;
-            color: var(--text-sub);
-        }
-
-        .footer-lists li {
-            margin-bottom: 0.4rem;
-        }
-
-        .footer-right {
-            text-align: right;
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            align-items: center;
         }
 
-        .footer-right a {
-            color: var(--text-sub);
-            text-decoration: none;
-            transition: color 0.3s ease;
+        .hero h1 {
+            margin-bottom: 2.2rem;
         }
 
-        .footer-right a:hover {
-            color: var(--text-main);
+        .hero .btn-primary {
+            padding: 1.15rem 2.4rem;
+            font-size: 0.85rem;
         }
 
-        /* --- Mobile Responsive Layout --- */
+        .fine-print {
+            margin-top: 1.4rem;
+            max-width: 62ch;
+            font-size: 0.72rem;
+            line-height: 1.7;
+        }
+
+        .fine-print span {
+            color: var(--ink-dim);
+            padding: 0 0.4rem;
+        }
+
+        /* Two option panels */
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .options .panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .options h2 {
+            margin-bottom: 0.6rem;
+        }
+
+        .options h2 .scan {
+            font-weight: 800;
+        }
+
+        .options p {
+            margin-bottom: 1.6rem;
+        }
+
+        .options .btn-group {
+            justify-content: flex-start;
+            margin-top: auto;
+        }
+
         @media (max-width: 900px) {
-            .top-nav {
-                padding: 1.2rem 1.5rem;
+            main {
+                padding-top: 6rem;
+                gap: 2.6rem;
             }
 
-            .nav-links {
-                padding: 0.5rem 0.9rem;
-                gap: 1.1rem;
-            }
-
-            .main-container {
-                justify-content: flex-start;
-                padding: 6rem 1.25rem 2.5rem 1.25rem;
-            }
-
-            h1 {
-                font-size: 1.7rem;
-            }
-
-            h2 {
-                font-size: 1.35rem;
-            }
-
-            .btn-group {
-                flex-direction: column;
-                align-items: center;
-                gap: 0.9rem;
-            }
-
-            .btn,
-            .btn-primary {
-                width: 100%;
-                max-width: 260px;
-                padding: 0.8rem 1.5rem;
-            }
-
-            footer {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                gap: 1.5rem;
-            }
-
-            .footer-lists {
+            .notice {
                 flex-direction: column;
                 gap: 0.8rem;
             }
 
-            .footer-right {
+            .options {
+                grid-template-columns: 1fr;
+            }
+
+            .options .panel {
                 text-align: center;
             }
-        }
 
-        @media (prefers-reduced-motion: reduce) {
-            html {
-                scroll-behavior: auto;
-            }
-
-            *,
-            *::before,
-            *::after {
-                animation: none !important;
-                transition-duration: 0.01ms !important;
-            }
-
-            .main-container>* {
-                opacity: 1;
+            .options .btn-group {
+                justify-content: center;
             }
         }
     </style>
 </head>
 
 <body>
+    <canvas class="bg-dust" aria-hidden="true"></canvas>
+    <svg class="orbits" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g fill="none" stroke="#fff">
+            <circle cx="1720" cy="380" r="620" stroke-opacity="0.07" />
+            <circle cx="1720" cy="380" r="700" stroke-opacity="0.04" />
+            <path d="M 1360 0 C 1270 300, 1270 600, 1380 900" stroke-opacity="0.06" />
+        </g>
+    </svg>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
 
-    <!-- Header Navigation -->
-    <header class="top-nav">
-        <a href="https://mariowos.github.io/">
-            <img src="images/mariowos-icon.png" alt="mariowOS" class="nav-logo">
-        </a>
-        <div class="nav-links">
-            <a href="https://github.com/mariowOS/" target="_blank"><img src="images/github.webp" alt="GitHub"></a>
-            <a href="https://discord.gg/QxjDUeQGMu" target="_blank"><img src="images/discord.webp" alt="Discord"></a>
+    <header class="hud-top">
+        <div class="hud-left">
+            <a href="https://mariowos.github.io/" class="brand">
+                <img src="../images/mariowos-icon.png" alt="mariowOS">
+                <span>// System Archive</span>
+                <span class="ticks" aria-hidden="true"><i></i><i></i><i></i></span>
+            </a>
+            <span class="chip">Archive / DL — Download</span>
+        </div>
+        <div class="hud-right">
+            <span class="dot-line" aria-hidden="true"><span></span></span>
+            <span class="slogan">Fast • Smooth • Open • Yours</span>
+            <nav class="socials" aria-label="Community">
+                <a href="https://github.com/mariowOS/" target="_blank" rel="noopener"><img src="../images/github.webp"
+                        alt="GitHub"></a>
+                <a href="https://discord.gg/QxjDUeQGMu" target="_blank" rel="noopener"><img
+                        src="../images/discord.webp" alt="Discord"></a>
+            </nav>
         </div>
     </header>
 
-    <div class="aurora" aria-hidden="true"></div>
-    <canvas id="star-canvas"></canvas>
-
-    <div class="main-container">
-
-        <!-- Warning Banner -->
-        <div class="warning-banner">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 2L1 21h22L12 2zm1 16h-2v-2h2v2zm0-4h-2v-4h2v4z" />
-            </svg>
-            <div class="warning-text">
-                <h4>Insiders channel updates warning</h4>
+    <main>
+        <!-- Notice -->
+        <div class="panel notice fade-element">
+            <span class="notice-tag">Notice</span>
+            <div>
+                <h3>Insiders channel updates warning</h3>
                 <p>Due to the latest release the insiders channel will expect slowdowns until we start developing on the
                     new upcoming release.</p>
             </div>
         </div>
 
         <!-- 1. Ready to make the switch? -->
-        <div class="download-section">
-            <h1>Ready to make the <span class="text-gradient-switch">switch?</span></h1>
+        <section class="hero fade-element">
+            <div class="kicker center">Sector DL — Stable channel</div>
+            <h1>Ready to make the<span class="big-word scan">switch?</span></h1>
             <div class="btn-group">
                 <a href="https://github.com/mariowOS/OTA/raw/refs/heads/main/stable/latest.zip"
-                    class="btn btn-gradient-1 btn-primary">Download latest</a>
+                    class="btn btn-primary">Download latest <span class="btn-arrow">&darr;</span></a>
             </div>
-            <p style="margin-top: 0.8rem; font-size: 0.78rem;">
-                This version may prompt you to update when booted for the first time due to continuous updates &bull;
-                Requires node.js and npm to be fully set up on your host
+            <p class="fine-print">
+                This version may prompt you to update when booted for the first time due to continuous updates<span
+                    aria-hidden="true">•</span>Requires node.js and npm to be fully set up on your host
             </p>
+        </section>
+
+        <div class="options">
+            <!-- 2. Need a different taste? -->
+            <section class="panel fade-element">
+                <div class="panel-index"><span>01 / Channels</span><span>ALT</span></div>
+                <h2>Need a different <span class="scan">taste?</span></h2>
+                <p>Try what's next on Insiders, or go back to the classic DosVM build.</p>
+                <div class="btn-group">
+                    <a href="https://github.com/mariowOS/development" class="btn">Insiders</a>
+                    <a href="https://github.com/mariowOS/bwcompatibility" class="btn">DosVM</a>
+                </div>
+            </section>
+
+            <!-- 3. Want to cook yourself? -->
+            <section class="panel fade-element">
+                <div class="panel-index"><span>02 / Build</span><span>SRC</span></div>
+                <h2>Want to cook <span class="scan">yourself?</span></h2>
+                <p>Join the team on Discord, or fork the repo and build your own.</p>
+                <div class="btn-group">
+                    <a href="https://discord.gg/QxjDUeQGMu" class="btn">Work with us <span
+                            class="btn-arrow">&rarr;</span></a>
+                    <a href="https://github.com/mariowOS/development" class="btn">Fork our repo</a>
+                </div>
+            </section>
         </div>
+    </main>
 
-        <!-- 2. Need a different taste? -->
-        <div class="download-section">
-            <h2>Need a different <span class="text-gradient-taste">taste?</span></h2>
-            <div class="btn-group">
-                <a href="https://github.com/mariowOS/development" class="btn btn-gradient-2">Insiders</a>
-                <a href="https://github.com/mariowOS/bwcompatibility" class="btn btn-gradient-3">DosVM</a>
-            </div>
-        </div>
-
-        <!-- 3. Want to cook yourself? -->
-        <div class="download-section">
-            <h2>Want to cook <span class="text-gradient-cook">yourself?</span></h2>
-            <div class="btn-group">
-                <a href="https://discord.gg/QxjDUeQGMu" class="btn btn-gradient-3">Work with us <span
-                        class="btn-arrow">&rarr;</span></a>
-                <a href="https://github.com/mariowOS/development" class="btn btn-gradient-4">Fork our repo</a>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Footer -->
-    <footer>
+    <footer class="site-footer">
         <div>
-            <h2 style="margin: 0; font-size: 1.3rem;">mariowstech</h2>
-            <p style="margin: 0; font-size: 0.8rem; margin-top: 3px;">Made with <svg
-                    style="width:11px; vertical-align:middle; fill:#ff6b81;" viewBox="0 0 24 24">
+            <div class="signature">mariowstech</div>
+            <p>Made with <svg style="width:11px; vertical-align:middle; fill:#fff;" viewBox="0 0 24 24"
+                    aria-label="love">
                     <path
                         d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                 </svg> by</p>
@@ -596,78 +257,7 @@
         </div>
     </footer>
 
-    <script>
-        const canvas = document.getElementById('star-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let stars = [];
-
-        function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            stars = [];
-            for (let i = 0; i < 150; i++) {
-                stars.push(new Star());
-            }
-        }
-
-        let currentWidth = window.innerWidth;
-
-        function resizeStars() {
-            if (currentWidth != window.innerWidth) {
-                initCanvas();
-                currentWidth = window.innerWidth;
-            }
-        }
-
-        window.addEventListener('resize', resizeStars);
-
-        class Star {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.size = Math.random() * 1.5 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.08;
-                this.speedY = (Math.random() - 0.5) * 0.08;
-                this.alpha = Math.random() * 0.4 + 0.3;
-                this.phase = Math.random() * Math.PI * 2;
-                this.twinkle = Math.random() * 0.02 + 0.005;
-                const tints = ['255, 255, 255', '255, 255, 255', '255, 255, 255', '252, 206, 255', '190, 235, 245', '200, 255, 215'];
-                this.tint = tints[Math.floor(Math.random() * tints.length)];
-            }
-
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-
-                if (this.x < 0) this.x = width;
-                if (this.x > width) this.x = 0;
-                if (this.y < 0) this.y = height;
-                if (this.y > height) this.y = 0;
-                this.phase += this.twinkle;
-            }
-
-            draw() {
-                const a = this.alpha * (0.65 + 0.35 * Math.sin(this.phase));
-                ctx.fillStyle = `rgba(${this.tint}, ${a})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function animateCanvas() {
-            ctx.clearRect(0, 0, width, height);
-            stars.forEach(star => {
-                star.update();
-                star.draw();
-            });
-            requestAnimationFrame(animateCanvas);
-        }
-
-        initCanvas();
-        animateCanvas();
-    </script>
+    <script src="../theme/halo.js"></script>
 </body>
 
 </html>

@@ -1,155 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mariowOS | Security Updates Center</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Poppins:wght@600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../theme/halo.css">
     <style>
-        :root {
-            --bg: #000000;
-            --text-main: #ffffff;
-            --text-sub: #a1a1aa;
-            --border: rgba(255, 255, 255, 0.08);
-            --glass: rgba(255, 255, 255, 0.04);
-            --code-bg: rgba(255, 255, 255, 0.06);
-        }
-        * { box-sizing: border-box; }
-        html { -webkit-font-smoothing: antialiased; }
         body {
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.7;
-            color: var(--text-sub);
-            background-color: var(--bg);
-            background-image:
-                radial-gradient(50% 40% at 10% 0%, rgba(203, 36, 49, 0.10), transparent 70%),
-                radial-gradient(40% 40% at 100% 30%, rgba(191, 0, 255, 0.07), transparent 70%);
-            background-attachment: fixed;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 2rem 4rem 2rem;
-        }
-        ::selection { background: rgba(203, 36, 49, 0.4); color: #fff; }
-        .top-nav {
+            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 2rem 0 1rem 0;
+            flex-direction: column;
         }
-        .top-nav img { height: 20px; display: block; }
-        .top-nav a.back {
-            color: var(--text-sub);
-            text-decoration: none;
-            font-size: 0.85rem;
-            padding: 0.45rem 1rem;
-            border-radius: 999px;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            transition: color 0.3s ease, border-color 0.3s ease;
-        }
-        .top-nav a.back:hover { color: var(--text-main); border-color: rgba(255, 255, 255, 0.25); }
-        h1, h2, h3, h4, h5 {
-            color: var(--text-main);
-            margin-top: 1.6em;
-            margin-bottom: 0.5em;
-            font-weight: 600;
-            line-height: 1.3;
-        }
-        h2 {
-            font-size: 1.7rem;
-            font-weight: 700;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5em;
-        }
-        h4 { font-size: 1.05rem; }
-        strong { color: var(--text-main); font-weight: 600; }
-        a { color: #7cb7ff; }
-        code {
-            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-            color: #e4e4e7;
-            background-color: var(--code-bg);
-            border: 1px solid var(--border);
-            padding: 0.1em 0.4em;
-            border-radius: 6px;
-            font-size: 85%;
-        }
-        table {
-            border-collapse: separate;
-            border-spacing: 0;
+
+        .doc {
+            flex: 1 0 auto;
             width: 100%;
-            margin-bottom: 1.5em;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            background: var(--glass);
         }
-        th, td {
-            padding: 10px 16px;
-            border-bottom: 1px solid var(--border);
-            text-align: left;
+
+        .bulletin-list {
+            list-style: none;
+            padding: 0 !important;
+            margin-top: 2.4rem;
+            border-top: 1px solid var(--line);
         }
-        tr:last-child td { border-bottom: none; }
-        th {
-            color: var(--text-main);
-            font-weight: 600;
-            background-color: rgba(255, 255, 255, 0.05);
+
+        .bulletin-list li {
+            margin: 0;
         }
-        hr {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            border: none;
-            margin: 2.5em 0;
-        }
-        .severity-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-right: 8px;
-        }
-        .critical, .critical strong { color: #ff4d5e; }
-        .high, .high strong { color: #ff8a3d; }
-        .medium, .medium strong { color: #f5c542; }
-        .low, .low strong { color: #4da3ff; }
-        ul, ol { padding-left: 1.6em; }
-        li { margin-bottom: 0.35em; }
-        li::marker { color: rgba(255, 255, 255, 0.35); }
+
         .bulletin {
-            display: block;
-            margin-top: 1.5rem;
-            padding: 1.2rem 1.5rem;
-            border-radius: 14px;
-            background: linear-gradient(90deg, rgba(203, 36, 49, 0.12) 0%, var(--glass) 50%);
-            border: 1px solid rgba(255, 77, 94, 0.25);
+            display: grid;
+            grid-template-columns: auto 1fr auto auto;
+            align-items: center;
+            gap: 1.6rem;
+            padding: 1.3rem 0.4rem;
+            border-bottom: 1px solid var(--line);
             text-decoration: none;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+            color: var(--ink);
+            transition: background 0.35s ease, padding 0.5s var(--ease);
         }
+
         .bulletin:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(203, 36, 49, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+            padding-left: 1rem;
         }
-        .bulletin h3 { margin: 0 0 0.2rem 0; }
-        .bulletin p { margin: 0; color: var(--text-sub); }
+
+        .bulletin .id {
+            font-size: 0.72rem;
+            letter-spacing: 0.2em;
+            color: var(--ink-sub);
+        }
+
+        .bulletin h3 {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .bulletin p {
+            margin: 0.2rem 0 0;
+            font-size: 0.8rem;
+        }
+
+        .bulletin .arrow {
+            transition: transform 0.4s var(--ease);
+        }
+
+        .bulletin:hover .arrow {
+            transform: translateX(4px);
+        }
+
         @media (max-width: 600px) {
-            body { padding: 0 1rem 3rem 1rem; }
-            h2 { font-size: 1.35rem; }
-            table { display: block; overflow-x: auto; }
+            .bulletin {
+                grid-template-columns: 1fr auto;
+                gap: 0.6rem 1rem;
+            }
+
+            .bulletin .id {
+                grid-column: 1 / -1;
+            }
+
+            .bulletin .arrow {
+                display: none;
+            }
         }
     </style>
 </head>
-<body>
-    <header class="top-nav">
-        <a href="https://mariowos.github.io/"><img src="../images/mariowos-icon.png" alt="mariowOS"></a>
-        <a class="back" href="https://mariowos.github.io/">&larr; Home</a>
-    </header>
-    <h2>mariowOS > Security</h2>
-    <a class="bulletin" href="100926/index.html">
-        <h3 class="critical">Patch (100926, honeypot 1.2.0)</h3>
-        <p>Critical security patch</p>
-    </a>
 
+<body>
+    <canvas class="bg-dust" aria-hidden="true"></canvas>
+    <svg class="orbits" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <g fill="none" stroke="#fff">
+            <circle cx="1720" cy="380" r="620" stroke-opacity="0.07" />
+            <circle cx="1720" cy="380" r="700" stroke-opacity="0.04" />
+        </g>
+    </svg>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="hud-top">
+        <div class="hud-left">
+            <a href="https://mariowos.github.io/" class="brand">
+                <img src="../images/mariowos-icon.png" alt="mariowOS">
+                <span>// System Archive</span>
+                <span class="ticks" aria-hidden="true"><i></i><i></i><i></i></span>
+            </a>
+            <span class="chip">Archive / SEC — Bulletins</span>
+        </div>
+        <div class="hud-right">
+            <span class="dot-line" aria-hidden="true"><span></span></span>
+            <span class="slogan">Discipline • Disclosure • Patch</span>
+            <a class="back-link" href="https://mariowos.github.io/">&larr; Home</a>
+        </div>
+    </header>
+
+    <main class="doc">
+        <div class="fade-element">
+            <div class="kicker">mariowOS &gt; Security</div>
+            <h1 class="scan">Security bulletins</h1>
+            <p>Every security patch we ship, what it fixed and how bad it was.</p>
+        </div>
+
+        <ul class="bulletin-list fade-element">
+            <li>
+                <a class="bulletin" href="100926/index.html">
+                    <span class="id">100926</span>
+                    <div>
+                        <h3>Patch (100926, honeypot 1.2.0)</h3>
+                        <p>Critical security patch</p>
+                    </div>
+                    <span class="sev critical">Critical</span>
+                    <span class="arrow" aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </main>
+
+    <footer class="site-footer">
+        <div>
+            <div class="signature">mariowstech</div>
+            <p>Made with <svg style="width:11px; vertical-align:middle; fill:#fff;" viewBox="0 0 24 24"
+                    aria-label="love">
+                    <path
+                        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg> by</p>
+        </div>
+        <div class="footer-lists">
+            <ul>
+                <li>@davidjone16</li>
+                <li>@erti</li>
+                <li>@kevadesu</li>
+            </ul>
+            <ul>
+                <li>@kianish</li>
+                <li>@diegoolivaa</li>
+                <li>and you!</li>
+            </ul>
+        </div>
+        <div class="footer-right">
+            <a href="https://mariowos.github.io/security">Security bulletins</a>
+            <a href="#">Join beta</a>
+        </div>
+    </footer>
+
+    <script src="../theme/halo.js"></script>
 </body>
+
 </html>
